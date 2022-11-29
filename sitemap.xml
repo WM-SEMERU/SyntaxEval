@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://WM-SEMERU.github.io/CodeCheckList/evaluator.html</loc>
+    <lastmod>2022-11-29T15:08:53.904Z</lastmod>
+  </url>
+  <url>
+    <loc>https://WM-SEMERU.github.io/CodeCheckList/predictor.html</loc>
+    <lastmod>2022-11-29T15:08:55.760Z</lastmod>
+  </url>
+  <url>
+    <loc>https://WM-SEMERU.github.io/CodeCheckList/loader.html</loc>
+    <lastmod>2022-11-29T15:08:56.176Z</lastmod>
+  </url>
+  <url>
+    <loc>https://WM-SEMERU.github.io/CodeCheckList/masker.html</loc>
+    <lastmod>2022-11-29T15:08:56.508Z</lastmod>
+  </url>
+  <url>
+    <loc>https://WM-SEMERU.github.io/CodeCheckList/tokenizer.html</loc>
+    <lastmod>2022-11-29T15:08:56.864Z</lastmod>
+  </url>
+  <url>
+    <loc>https://WM-SEMERU.github.io/CodeCheckList/utils.html</loc>
+    <lastmod>2022-11-29T15:08:57.244Z</lastmod>
+  </url>
+</urlset>
