@@ -47,7 +47,6 @@ class Masker():
     ):  
         node_mask_id = self.code_tokenizer.tokenizer.mask_token_id
         tree = self.code_tokenizer.parser.parse(bytes(code, "utf8"))
-
         filtered_nodes = []
         find_nodes(tree.root_node, self.code_tokenizer.node_types[target_node_type_id], filtered_nodes)
         filtered_node_offsets = [(convert_to_offset(node.start_point, code.split("\n")), 
