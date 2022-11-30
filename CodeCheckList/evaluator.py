@@ -3,15 +3,17 @@
 # %% auto 0
 __all__ = ['Evaluator']
 
-# %% ../nbs/evaluator.ipynb 21
+# %% ../nbs/evaluator.ipynb 20
 import CodeCheckList
+import pandas as pd
 
 import CodeCheckList.utils as utils
 from .tokenizer import CodeTokenizer
 from .masker import Masker
 from .predictor import Predictor
 
-# %% ../nbs/evaluator.ipynb 22
+
+# %% ../nbs/evaluator.ipynb 21
 class Evaluator:
     """Evaluator Module to perform all AST Evaluations"""
     def __init__(self, checkpoint: str, language):
@@ -19,13 +21,42 @@ class Evaluator:
         self.masker = Masker(self.tokenizer)
         self.predictor = Predictor.from_pretrained(checkpoint, self.tokenizer)
 
-    def __call__(self, source_code: str, number_of_predictions: int):
+    def __call__(self, test_set, number_of_predictions: int):
+        results_dict = self.evaluate_test_set(test_set, number_of_predictions)
+        results_dataframe = pd.DataFrame([], columns=['ast_element', 'occurences', 'successful_predictions', 'failed_predictions', 'total_predictions', 'success_average', 'failure_average'])
+        for result_index, result in enumerate(results_dict):
+            results_dataframe.loc[len(results_dataframe.index)] = [self.tokenizer.node_types[result_index] ,result[0], result[1], result[2], result[3], result[4], result[5]]
+        return results_dataframe
+    
+    def evaluate_test_set(self, test_set, number_of_predictions: int):
+        results_dict = []
+        for node_type in self.tokenizer.node_types:
+            results_dict.append([0, [0 for i in range(0,number_of_predictions)], 
+                                [0 for i in range(0,number_of_predictions)], 
+                                [0 for i in range(0,number_of_predictions)], 
+                                [0 for i in range(0,number_of_predictions)],
+                                [0 for i in range(0,number_of_predictions)]])
+        for sample in test_set:
+            sample_results = self.evaluate_code_snippet(sample['whole_func_string'], number_of_predictions)
+            for element_index, element_result in enumerate(sample_results):
+                element_result_values = list(element_result.values())[0]
+                if len(element_result_values) > 0:
+                    results_dict[element_index][0] += element_result_values[0][0]
+                    for prediction_number_index in range(0, number_of_predictions):
+                        results_dict[element_index][1][prediction_number_index]+= (1 if element_result_values[prediction_number_index][2] else 0)
+                        results_dict[element_index][2][prediction_number_index]+= (0 if element_result_values[prediction_number_index][2] else 1)
+                        results_dict[element_index][3][prediction_number_index]= results_dict[element_index][1][prediction_number_index] + results_dict[element_index][2][prediction_number_index]
+                        results_dict[element_index][4][prediction_number_index]= results_dict[element_index][1][prediction_number_index]/results_dict[element_index][3][prediction_number_index]
+                        results_dict[element_index][5][prediction_number_index]= results_dict[element_index][2][prediction_number_index]/results_dict[element_index][3][prediction_number_index]
+        return results_dict
+        
+    def evaluate_code_snippet(self, source_code: str, number_of_predictions: int):
         evaluation_results = []
         for node_type_idx, node_type in enumerate(self.tokenizer.node_types):
-            evaluation_results.append({node_type: self.evaluate_snippet(source_code, node_type_idx, number_of_predictions)})
+            evaluation_results.append({node_type: self.evaluate_node_type_on_snippet(source_code, node_type_idx, number_of_predictions)})
         return evaluation_results
             
-    def evaluate_snippet(self, source_code: str, target_node_type_idx: int, number_of_predictions: int):
+    def evaluate_node_type_on_snippet(self, source_code: str, target_node_type_idx: int, number_of_predictions: int):
         results=[]
         source_code_nodes = []
         utils.find_nodes(self.tokenizer.parser.parse(bytes(source_code, "utf8")).root_node, 
