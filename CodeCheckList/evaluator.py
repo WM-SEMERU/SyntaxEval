@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['Evaluator']
 
-# %% ../nbs/evaluator.ipynb 17
+# %% ../nbs/evaluator.ipynb 21
 import CodeCheckList
 
 import CodeCheckList.utils as utils
@@ -11,7 +11,7 @@ from .tokenizer import CodeTokenizer
 from .masker import Masker
 from .predictor import Predictor
 
-# %% ../nbs/evaluator.ipynb 18
+# %% ../nbs/evaluator.ipynb 22
 class Evaluator:
     """Evaluator Module to perform all AST Evaluations"""
     def __init__(self, checkpoint: str, language):
@@ -43,6 +43,6 @@ class Evaluator:
             predicted_code = predictions[prediction_number]
             predicted_nodes = []
             utils.find_nodes(self.tokenizer.parser.parse(bytes(predicted_code, "utf8")).root_node, self.tokenizer.node_types[target_node_type_idx], predicted_nodes)
-            results.append((len(source_code_nodes), len(predicted_nodes), len(predicted_nodes)>=len(source_code_nodes)))
+            results.append([len(source_code_nodes), len(predicted_nodes), len(predicted_nodes)>=len(source_code_nodes)])
 
         return results

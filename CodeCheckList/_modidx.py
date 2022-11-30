@@ -36,5 +36,7 @@ d = { 'settings': { 'branch': 'master',
                                                                                      'CodeCheckList/tokenizer.py')},
             'CodeCheckList.utils': { 'CodeCheckList.utils.convert_to_offset': ('utils.html#convert_to_offset', 'CodeCheckList/utils.py'),
                                      'CodeCheckList.utils.find_nodes': ('utils.html#find_nodes', 'CodeCheckList/utils.py'),
+                                     'CodeCheckList.utils.get_sub_set_test_set': ( 'utils.html#get_sub_set_test_set',
+                                                                                   'CodeCheckList/utils.py'),
                                      'CodeCheckList.utils.traverse': ('utils.html#traverse', 'CodeCheckList/utils.py'),
                                      'CodeCheckList.utils.unroll_node_types': ('utils.html#unroll_node_types', 'CodeCheckList/utils.py')}}}
