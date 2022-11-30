@@ -42,11 +42,23 @@ def unroll_node_types(
     node_types = [node_type["type"] for node_type in nested_node_types]
     node_subtypes = [
         node_subtype["type"]
-        for node_type in node_types
+        for node_type in nested_node_types
         if "subtypes" in node_type
         for node_subtype in node_type["subtypes"]
     ]
-    return list(set(node_types + node_subtypes))
+    children_subtypes = [
+        children_type["type"]
+        for node_type in nested_node_types
+        if "children" in node_type
+        for children_type in node_type["children"]["types"]
+    ]
+    alias_subtypes = [
+        children_type["type"]
+        for node_type in nested_node_types
+        if "fields" in node_type and "alias" in node_type["fields"] 
+        for children_type in node_type["fields"]["alias"]["types"]
+    ]
+    return list(set(node_types + node_subtypes + children_subtypes + alias_subtypes))
 
 # %% ../nbs/utils.ipynb 6
 def convert_to_offset(
