@@ -23,7 +23,7 @@ test_set = load_dataset("code_search_net", split='test')
 test_set = test_set.filter(lambda sample: True if sample['language']== python_language
             and len(sample['func_code_tokens']) <= max_token_number
             and len(evaluator.tokenizer.tokenizer(sample['whole_func_string'])['input_ids']) <= max_token_number else False, num_proc=1)
-test_set = utils.get_sub_set_test_set(test_set, number_of_samples)
+#test_set = utils.get_sub_set_test_set(test_set, number_of_samples)
 
 results_dataframe = evaluator(test_set, number_of_predictions_per_sample)
 results_dataframe = results_dataframe.sort_values(by=['occurences'], ascending=False)
