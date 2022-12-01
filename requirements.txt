@@ -1,6 +1,0 @@
-torch==1.12.1
-fastcore 
-gitpython 
-pandas 
-transformers 
-tree-sitter==0.20.1
