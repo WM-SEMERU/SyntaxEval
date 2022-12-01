@@ -37,7 +37,7 @@ class Evaluator:
                                 [0 for i in range(0,number_of_predictions)],
                                 [0 for i in range(0,number_of_predictions)]])
         for sample_index, sample in enumerate(test_set):
-            if sample_index%100 == 0:
+            if sample_index%10 == 0:
                 print('evaluating sample:'+str(sample_index))
             sample_results = self.evaluate_code_snippet(sample['whole_func_string'], number_of_predictions)
             for element_index, element_result in enumerate(sample_results):

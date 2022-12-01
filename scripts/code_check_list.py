@@ -6,7 +6,7 @@ import CodeCheckList.utils as utils
 
 ########## YOU NEED TO SET THIS FIRST #######
 checkpoint = "huggingface/CodeBERTa-small-v1"
-number_of_samples = 10000
+number_of_samples = 1000
 number_of_predictions_per_sample = 3
 python_language = "python"
 save_path = "output/"
@@ -28,8 +28,10 @@ print('---END EVALUATION----')
 results_dataframe = evaluator(test_set, number_of_predictions_per_sample)
 results_dataframe = results_dataframe.sort_values(by=['occurences'], ascending=False)
 
+print(results_dataframe.head())
+
 print('---SAVING TABLE----')
-## PLIAS A ESTO 
+## PILAS A ESTO 
 results_dataframe.to_csv(save_path+checkpoint.replace("/","-")+"_"+str(number_of_samples)+"_"+str(number_of_predictions_per_sample)+".csv")
 #results_dataframe.to_csv(save_path+checkpoint.replace("/","-")+"_"+"all"+"_"+str(number_of_predictions_per_sample)+".csv")
 
