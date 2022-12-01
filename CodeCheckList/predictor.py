@@ -25,7 +25,9 @@ class Predictor:
         attention_mask = code_encoding['attention_mask'].to('cuda:0')
         model_input = {'input_ids' : tokens_tensor,
           'attention_mask' : attention_mask}
+        print("------IN------")
         model_prediction = self.model(**model_input)
+        print("------OUT------")
 
         preditions = []
         for k_index in range(0, top_k):
@@ -45,6 +47,7 @@ class Predictor:
         tokenizer: CodeTokenizer    #tokenizer, has to be of the same type that the pretrained model
     ): 
         """Create a AutoModelForMaskedLM from a pretrained model."""
+        print("Loading Model into GPU")
         model = AutoModelForMaskedLM.from_pretrained(name_or_path).to('cuda:0')
         return Predictor(tokenizer, model)
 
