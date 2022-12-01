@@ -12,7 +12,6 @@ from .tokenizer import CodeTokenizer
 from .masker import Masker
 from .predictor import Predictor
 
-
 # %% ../nbs/evaluator.ipynb 3
 class Evaluator:
     """Evaluator Module to perform all AST Evaluations"""
@@ -38,11 +37,8 @@ class Evaluator:
                                 [0 for i in range(0,number_of_predictions)]])
         for sample_index, sample in enumerate(test_set):
             print('-------------evaluating sample:'+str(sample_index)+'---------------------')
-            print('EINR')
             sample_results = self.evaluate_code_snippet(sample['whole_func_string'], number_of_predictions)
-            print('EOTR')
             for element_index, element_result in enumerate(sample_results):
-                print('EINSR')
                 element_result_values = list(element_result.values())[0]
                 if len(element_result_values) > 0:
                     results_dict[element_index][0] += element_result_values[0][0]
@@ -52,19 +48,15 @@ class Evaluator:
                         results_dict[element_index][3][prediction_number_index]= results_dict[element_index][1][prediction_number_index] + results_dict[element_index][2][prediction_number_index]
                         results_dict[element_index][4][prediction_number_index]= results_dict[element_index][1][prediction_number_index]/results_dict[element_index][3][prediction_number_index]
                         results_dict[element_index][5][prediction_number_index]= results_dict[element_index][2][prediction_number_index]/results_dict[element_index][3][prediction_number_index]
-                print('EOTSR') 
         return results_dict
         
     def evaluate_code_snippet(self, source_code: str, number_of_predictions: int):
-        print('EINCS')
         evaluation_results = []
         for node_type_idx, node_type in enumerate(self.tokenizer.node_types):
             evaluation_results.append({node_type: self.evaluate_node_type_on_snippet(source_code, node_type_idx, number_of_predictions)})
-        print('EOTCS')
         return evaluation_results
             
     def evaluate_node_type_on_snippet(self, source_code: str, target_node_type_idx: int, number_of_predictions: int):
-        print('EINTCS')
         results=[]
         source_code_nodes = []
         utils.find_nodes(self.tokenizer.parser.parse(bytes(source_code, "utf8")).root_node, 
@@ -80,7 +72,9 @@ class Evaluator:
         for prediction_number in range(0, number_of_predictions):
             predicted_code = predictions[prediction_number]
             predicted_nodes = []
-            utils.find_nodes(self.tokenizer.parser.parse(bytes(predicted_code, "utf8")).root_node, self.tokenizer.node_types[target_node_type_idx], predicted_nodes)
+            ########## THIS PART NEEDS TO BE VALIDATED
+            if utils.is_valid_code(predicted_code):
+                predicted_nodes = utils.find_nodes_matching_type(self.tokenizer.parser, predicted_code, self.tokenizer.node_types[target_node_type_idx])
+                if predicted_nodes is None: predicted_code = []
             results.append([len(source_code_nodes), len(predicted_nodes), len(predicted_nodes)>=len(source_code_nodes)])
-        print('EOTTCS')
         return results
