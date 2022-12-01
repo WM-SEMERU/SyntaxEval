@@ -20,7 +20,12 @@ class Predictor:
         masked_indexes = list(map(lambda entry: entry[0],
             list(filter(lambda entry: True if entry[1] == self.tokenizer.tokenizer.mask_token_id else False, enumerate(masked_code_encoding['input_ids'])))))
         code_encoding['input_ids'][0] = torch.tensor([torch.tensor(input_id) for input_id in masked_code_encoding['input_ids']])
-        model_prediction = self.model(**code_encoding)
+        ##### IS TAKING TOO LONG
+        tokens_tensor = code_encoding['input_ids'].to('cuda:0')
+        attention_mask = code_encoding['attention_mask'].to('cuda:0')
+        model_input = {'input_ids' : tokens_tensor,
+          'attention_mask' : attention_mask}
+        model_prediction = self.model(**model_input)
 
         preditions = []
         for k_index in range(0, top_k):
@@ -40,6 +45,6 @@ class Predictor:
         tokenizer: CodeTokenizer    #tokenizer, has to be of the same type that the pretrained model
     ): 
         """Create a AutoModelForMaskedLM from a pretrained model."""
-        model = AutoModelForMaskedLM.from_pretrained(name_or_path)
+        model = AutoModelForMaskedLM.from_pretrained(name_or_path).to('cuda:0')
         return Predictor(tokenizer, model)
 

@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['Evaluator']
 
-# %% ../nbs/evaluator.ipynb 20
+# %% ../nbs/evaluator.ipynb 2
 import CodeCheckList
 import pandas as pd
 
@@ -13,7 +13,7 @@ from .masker import Masker
 from .predictor import Predictor
 
 
-# %% ../nbs/evaluator.ipynb 21
+# %% ../nbs/evaluator.ipynb 3
 class Evaluator:
     """Evaluator Module to perform all AST Evaluations"""
     def __init__(self, checkpoint: str, language):
@@ -63,13 +63,12 @@ class Evaluator:
             self.tokenizer.node_types[target_node_type_idx], source_code_nodes)
         if len(source_code_nodes) == 0:
             return results
-
         #source_code_encoding = self.tokenizer(source_code)
         masked_code_encoding = self.masker(source_code, self.tokenizer(source_code), target_node_type_idx)
         #masked_code = self.tokenizer.tokenizer.decode(list(filter(lambda token_id: False if token_id == self.tokenizer.tokenizer.bos_token_id or 
         #    token_id == self.tokenizer.tokenizer.eos_token_id else True, masked_code_encoding['input_ids'])))
-        predictions = self.predictor(masked_code_encoding, self.tokenizer.tokenizer(source_code, return_tensors='pt'), number_of_predictions)       
-
+        predictions = self.predictor(masked_code_encoding, self.tokenizer.tokenizer(source_code, return_tensors='pt'), number_of_predictions)  
+            
         for prediction_number in range(0, number_of_predictions):
             predicted_code = predictions[prediction_number]
             predicted_nodes = []
