@@ -2,13 +2,12 @@
 
 # %% auto 0
 __all__ = ['traverse', 'find_nodes', 'unroll_node_types', 'convert_to_offset', 'get_sub_set_test_set',
-           'get_random_sub_set_test_set', 'get_test_sets', 'find_nodes_matching_type', 'is_valid_code']
+           'get_random_sub_set_test_set', 'is_valid_code', 'get_test_sets', 'is_balanced_snippet']
 
 # %% ../nbs/utils.ipynb 2
 import CodeCheckList
 import ast
 import random
-from .wrapper import break_after
 
 # %% ../nbs/utils.ipynb 3
 # From: https://github.com/github/CodeSearchNet/tree/master/function_parser
@@ -62,7 +61,7 @@ def unroll_node_types(
         if "fields" in node_type and "alias" in node_type["fields"] 
         for children_type in node_type["fields"]["alias"]["types"]
     ]
-    return list(set(node_types + node_subtypes + children_subtypes + alias_subtypes))
+    return list(set(node_types + node_subtypes + children_subtypes + alias_subtypes + ['ERROR']))
 
 # %% ../nbs/utils.ipynb 6
 def convert_to_offset(
@@ -94,22 +93,6 @@ def get_random_sub_set_test_set(test_set, test_size:int):
     return sub_samples
 
 # %% ../nbs/utils.ipynb 9
-def get_test_sets(test_set, language, max_token_number, model_tokenizer, with_ranks=False, num_proc=1):
-    subset = test_set.filter(lambda sample: True if sample['language']== language 
-            and len(sample['func_code_tokens']) < max_token_number
-            and len(model_tokenizer.tokenizer(sample['whole_func_string'])['input_ids']) < max_token_number
-            else False, num_proc=num_proc)
-    return subset
-
-# %% ../nbs/utils.ipynb 10
-@break_after(10)
-def find_nodes_matching_type(parser, code, node_type):
-    found_nodes = []
-    find_nodes(parser.parse(bytes(code, "utf8")).root_node, node_type, found_nodes)
-    return found_nodes
-
-
-# %% ../nbs/utils.ipynb 11
 def is_valid_code(code):
     try:
         ast.parse(code)
@@ -117,3 +100,17 @@ def is_valid_code(code):
         return False
     return True
     
+
+# %% ../nbs/utils.ipynb 10
+def get_test_sets(test_set, language, max_token_number, model_tokenizer, with_ranks=False, num_proc=1):
+    subset = test_set.filter(lambda sample: True if sample['language']== language 
+            and len(sample['func_code_tokens']) < max_token_number
+            and len(model_tokenizer.tokenizer(sample['whole_func_string'])['input_ids']) < max_token_number
+            else False, num_proc=num_proc)
+    return subset
+
+# %% ../nbs/utils.ipynb 11
+def is_balanced_snippet(snippet):
+    percentage = 10
+    cleaned_code = snippet.replace(" ","").replace("\n","").replace("_","").replace(".","").replace(":","").replace("-","")
+    return (len(set(cleaned_code))/len(snippet))*100 > percentage

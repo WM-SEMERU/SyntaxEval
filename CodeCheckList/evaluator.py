@@ -72,9 +72,11 @@ class Evaluator:
         for prediction_number in range(0, number_of_predictions):
             predicted_code = predictions[prediction_number]
             predicted_nodes = []
-            ########## THIS PART NEEDS TO BE VALIDATED
-            if utils.is_valid_code(predicted_code):
-                predicted_nodes = utils.find_nodes_matching_type(self.tokenizer.parser, predicted_code, self.tokenizer.node_types[target_node_type_idx])
-                if predicted_nodes is None: predicted_code = []
+            ########## THIS PART IS IMPORTANT
+            #print('-I-')
+            #print("\""+predicted_code+"\"")
+            if utils.is_balanced_snippet(predicted_code):
+                utils.find_nodes(self.tokenizer.parser.parse(bytes(predicted_code, "utf8")).root_node, self.tokenizer.node_types[target_node_type_idx], predicted_nodes)
             results.append([len(source_code_nodes), len(predicted_nodes), len(predicted_nodes)>=len(source_code_nodes)])
+            #print('-O-')
         return results
