@@ -73,10 +73,12 @@ class Evaluator:
             predicted_code = predictions[prediction_number]
             predicted_nodes = []
             ########## THIS PART IS IMPORTANT
-            #print('-I-')
-            #print("\""+predicted_code+"\"")
             if utils.is_balanced_snippet(predicted_code):
-                utils.find_nodes(self.tokenizer.parser.parse(bytes(predicted_code, "utf8")).root_node, self.tokenizer.node_types[target_node_type_idx], predicted_nodes)
+                predicted_code_tree = self.tokenizer.parser.parse(bytes(predicted_code, "utf8")).root_node
+                source_code_tree = self.tokenizer.parser.parse(bytes(source_code, "utf8")).root_node
+                print(utils.calculate_jaccard_distance(predicted_code_tree, source_code_tree))
+                utils.find_nodes(predicted_code_tree, self.tokenizer.node_types[target_node_type_idx], predicted_nodes)
+                
             results.append([len(source_code_nodes), len(predicted_nodes), len(predicted_nodes)>=len(source_code_nodes)])
-            #print('-O-')
         return results
+

@@ -6,7 +6,7 @@ import CodeCheckList.utils as utils
 
 ########## YOU NEED TO SET THIS FIRST #######
 checkpoint = "huggingface/CodeBERTa-small-v1"
-number_of_samples = 1000
+number_of_samples = 50
 number_of_predictions_per_sample = 3
 python_language = "python"
 save_path = "output/"
