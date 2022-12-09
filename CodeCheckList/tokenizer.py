@@ -10,6 +10,7 @@ import CodeCheckList.utils as utils
 import json
 from transformers import AutoTokenizer
 from tree_sitter import Language, Parser
+import logging
 
 # %% ../nbs/tokenizer.ipynb 4
 def get_token_type(
@@ -63,9 +64,9 @@ class CodeTokenizer():
                     encoding["ast_ids"].append(self.node_types.index(node_type))
                     encoding["parent_ast_ids"].append(self.node_types.index(parent_node_type))
                 except Exception as e:
-                    print(type_info)
-                    print(code)
-                    print(self.tokenizer.decode(encoding["input_ids"][i]))
+                    logging.error(type_info)
+                    logging.error(code)
+                    logging.error(self.tokenizer.decode(encoding["input_ids"][i]))
                     encoding["ast_ids"].append(-1)
                     encoding["parent_ast_ids"].append(-1)
                     raise e

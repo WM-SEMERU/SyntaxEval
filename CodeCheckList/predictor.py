@@ -8,6 +8,7 @@ import torch
 import CodeCheckList
 from .tokenizer import CodeTokenizer
 from transformers import AutoModelForMaskedLM, BatchEncoding
+import logging
 
 # %% ../nbs/predictor.ipynb 3
 class Predictor:
@@ -21,7 +22,6 @@ class Predictor:
         masked_indexes = list(map(lambda entry: entry[0],
             list(filter(lambda entry: True if entry[1] == self.tokenizer.tokenizer.mask_token_id else False, enumerate(masked_code_encoding['input_ids'])))))
         code_encoding['input_ids'][0] = torch.tensor([torch.tensor(input_id) for input_id in masked_code_encoding['input_ids']])
-        ##### LOAD TO GPU 0
         tokens_tensor = code_encoding['input_ids']
         attention_mask = code_encoding['attention_mask']
         if(self.gpu_available):
@@ -30,7 +30,6 @@ class Predictor:
         model_input = {'input_ids' : tokens_tensor,
           'attention_mask' : attention_mask}
         model_prediction = self.model(**model_input)
-        ############################
         preditions = []
         for k_index in range(0, top_k):
             preditions.append(code_encoding['input_ids'][0].tolist().copy())
@@ -51,7 +50,7 @@ class Predictor:
         """Create a AutoModelForMaskedLM from a pretrained model."""
         model = AutoModelForMaskedLM.from_pretrained(name_or_path)
         if(gpu_available):
-            print("------------------Loading Model into GPU------------------")
+            logging.warning("------------------Loading Model into GPU------------------")
             model = AutoModelForMaskedLM.from_pretrained(name_or_path).to('cuda:0')
         return Predictor(tokenizer, model, gpu_available)
 

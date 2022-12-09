@@ -13,6 +13,8 @@ from .masker import Masker
 from .predictor import Predictor
 
 import statistics
+import textdistance
+import logging
 
 # %% ../nbs/evaluator.ipynb 3
 class Evaluator:
@@ -22,15 +24,15 @@ class Evaluator:
         self.masker = Masker(self.tokenizer)
         self.predictor = Predictor.from_pretrained(checkpoint, self.tokenizer, gpu_available)
 
-    def __call__(self, test_set, number_of_predictions: int):
-        results_dict = self.evaluate_test_set(test_set, number_of_predictions)
+    def __call__(self, test_set, number_of_predictions: int, masking_rate: float):
+        results_dict = self.evaluate_test_set(test_set, number_of_predictions, masking_rate)
         results_dataframe = pd.DataFrame([], columns=[
-            'ast_element', 'occurences', 'jaccard_distance', 'sorensen_dice_distance', 'jaccard_distance_avg', 'sorensen_dice_distance_avg'])
+            'ast_element', 'occurences', 'jaccard_index', 'sorensen_dice_index', 'jaccard_index_avg', 'sorensen_dice_index_avg'])
         for result_index, result in enumerate(results_dict):
             results_dataframe.loc[len(results_dataframe.index)] = [self.tokenizer.node_types[result_index], result[0], result[1], result[2], result[3], result[4]]
         return results_dataframe
     
-    def evaluate_test_set(self, test_set, number_of_predictions: int):
+    def evaluate_test_set(self, test_set, number_of_predictions: int, masking_rate: float):
         results_dict = []
         for node_type in self.tokenizer.node_types:
             results_dict.append([0,                                           #ocurrences
@@ -40,9 +42,9 @@ class Evaluator:
                                 [0 for i in range(0,number_of_predictions)],  #avg sorensen_dice per prediction
                                 ])
         for sample_index, sample in enumerate(test_set):
-            #print('-------------evaluating sample:'+str(sample_index)+'---------------------')
+            logging.info('--------evaluating sample:'+str(sample_index)+' --------')
             for node_type_idx, node_type in enumerate(self.tokenizer.node_types):
-                node_type_results = self.evaluate_node_type_on_snippet(sample['whole_func_string'], node_type_idx, number_of_predictions)
+                node_type_results = self.evaluate_node_type_on_snippet(sample['whole_func_string'], node_type_idx, number_of_predictions, masking_rate)
                 if(len(node_type_results)>0):
                     results_dict[node_type_idx][0] += node_type_results[0][0]
                     for prediction_number_index in range(0, number_of_predictions):
@@ -52,7 +54,7 @@ class Evaluator:
                         results_dict[node_type_idx][4][prediction_number_index] = round(statistics.mean(results_dict[node_type_idx][2][prediction_number_index]),3)
         return results_dict
         
-    def evaluate_node_type_on_snippet(self, source_code: str, target_node_type_idx: int, number_of_predictions: int):
+    def evaluate_node_type_on_snippet(self, source_code: str, target_node_type_idx: int, number_of_predictions: int, masking_rate: float):
         results=[]
 
         source_code_tree = self.tokenizer.parser.parse(bytes(source_code, "utf8")).root_node
@@ -61,7 +63,7 @@ class Evaluator:
         if len(source_code_nodes) == 0:
             return results
 
-        masked_code_encoding = self.masker(source_code, self.tokenizer(source_code), target_node_type_idx)
+        masked_code_encoding = self.masker(source_code, self.tokenizer(source_code), target_node_type_idx, masking_rate)
         predictions = self.predictor(masked_code_encoding, self.tokenizer.tokenizer(source_code, return_tensors='pt'), number_of_predictions)  
 
         for prediction_number in range(0, number_of_predictions):
@@ -71,11 +73,12 @@ class Evaluator:
             if utils.is_balanced_snippet(predicted_code):
                 predicted_code_tree = self.tokenizer.parser.parse(bytes(predicted_code, "utf8")).root_node
 
-                predicted_code_types = utils.get_node_type_set(predicted_code_tree)
-                source_code_types = utils.get_node_type_set(source_code_tree)
+                predicted_code_types = utils.get_node_type_list(predicted_code_tree)
+                source_code_types = utils.get_node_type_list(source_code_tree)
 
-                jaccard_distance = utils.calculate_jaccard_distance(predicted_code_types, source_code_types)
-                sorensen_dice_distance = utils.calculate_sorensen_dice_distance(predicted_code_types, source_code_types)
-            results.append([len(source_code_nodes), jaccard_distance, sorensen_dice_distance])
+                jaccard_index = textdistance.jaccard(predicted_code_types,source_code_types)
+                sorensen_dice_index = textdistance.sorensen_dice(predicted_code_types, source_code_types)
+
+            results.append([len(source_code_nodes), jaccard_index, sorensen_dice_index])
         return results
 

@@ -8,6 +8,7 @@ import CodeCheckList
 import CodeCheckList.utils as utils
 from .tokenizer import CodeTokenizer
 from tree_sitter import Parser
+import random
 
 # %% ../nbs/masker.ipynb 3
 class Masker():
@@ -19,7 +20,8 @@ class Masker():
     self,                            #self
     code: str,                       #source code snippet to mask
     encoding: list,                  #list of encodings
-    target_node_type_id: int         #target node type id to search 
+    target_node_type_id: int,        #target node type id to search 
+    masking_rate: float              #masking rate to apply [0-1]
     ):  
         node_mask_id = self.code_tokenizer.tokenizer.mask_token_id
         tree = self.code_tokenizer.parser.parse(bytes(code, "utf8"))
@@ -27,7 +29,7 @@ class Masker():
         utils.find_nodes(tree.root_node, self.code_tokenizer.node_types[target_node_type_id], filtered_nodes)
         filtered_node_offsets = [(utils.convert_to_offset(node.start_point, code.split("\n")), 
             utils.convert_to_offset(node.end_point, code.split("\n"))) for node in filtered_nodes]
-
+        filtered_node_offsets = utils.get_elements_by_percentage(filtered_node_offsets, masking_rate)
         for index, offset in enumerate(encoding['offset_mapping']):
             for filtered_node_offset in filtered_node_offsets:
                 if offset[0] >= filtered_node_offset[0] and offset[1]<= filtered_node_offset[1]:
