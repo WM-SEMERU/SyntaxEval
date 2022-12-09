@@ -153,6 +153,12 @@ checklink/cookies.txt
 /.quarto/
 
 # Script outputs 
-scripts/output/*
-scripts/output/
-scripts/output
+#scripts/output/*
+#scripts/output/
+#scripts/output
+
+
+# Script logs 
+scripts/logs/*
+scripts/logs/
+scripts/logs

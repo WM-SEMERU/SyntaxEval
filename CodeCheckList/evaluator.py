@@ -14,7 +14,6 @@ from .predictor import Predictor
 
 import statistics
 import textdistance
-import logging
 
 # %% ../nbs/evaluator.ipynb 3
 class Evaluator:
@@ -27,9 +26,9 @@ class Evaluator:
     def __call__(self, test_set, number_of_predictions: int, masking_rate: float):
         results_dict = self.evaluate_test_set(test_set, number_of_predictions, masking_rate)
         results_dataframe = pd.DataFrame([], columns=[
-            'ast_element', 'occurences', 'jaccard_index', 'sorensen_dice_index', 'jaccard_index_avg', 'sorensen_dice_index_avg'])
+            'ast_element', 'occurences', 'jaccard', 'sorensen_dice', 'levenshtein', 'jaccard_avg', 'sorensen_dice_avg', 'levenshtein_avg'])
         for result_index, result in enumerate(results_dict):
-            results_dataframe.loc[len(results_dataframe.index)] = [self.tokenizer.node_types[result_index], result[0], result[1], result[2], result[3], result[4]]
+            results_dataframe.loc[len(results_dataframe.index)] = [self.tokenizer.node_types[result_index], result[0], result[1], result[2], result[3], result[4], result[5], result[6]]
         return results_dataframe
     
     def evaluate_test_set(self, test_set, number_of_predictions: int, masking_rate: float):
@@ -38,11 +37,13 @@ class Evaluator:
             results_dict.append([0,                                           #ocurrences
                                 [[] for i in range(0,number_of_predictions)], #jaccard per prediction
                                 [[] for i in range(0,number_of_predictions)], #sorensen_dice per prediction
+                                [[] for i in range(0,number_of_predictions)], #levenshtein per prediction
                                 [0 for i in range(0,number_of_predictions)],  #avg jaccard per prediction
                                 [0 for i in range(0,number_of_predictions)],  #avg sorensen_dice per prediction
+                                [0 for i in range(0,number_of_predictions)],  #avg levenshtein per prediction
                                 ])
         for sample_index, sample in enumerate(test_set):
-            logging.info('--------evaluating sample:'+str(sample_index)+' --------')
+            print('--------evaluating sample:'+str(sample_index)+' --------')
             for node_type_idx, node_type in enumerate(self.tokenizer.node_types):
                 node_type_results = self.evaluate_node_type_on_snippet(sample['whole_func_string'], node_type_idx, number_of_predictions, masking_rate)
                 if(len(node_type_results)>0):
@@ -50,8 +51,10 @@ class Evaluator:
                     for prediction_number_index in range(0, number_of_predictions):
                         results_dict[node_type_idx][1][prediction_number_index].append(node_type_results[prediction_number_index][1])
                         results_dict[node_type_idx][2][prediction_number_index].append(node_type_results[prediction_number_index][2])
-                        results_dict[node_type_idx][3][prediction_number_index] = round(statistics.mean(results_dict[node_type_idx][1][prediction_number_index]),3)
-                        results_dict[node_type_idx][4][prediction_number_index] = round(statistics.mean(results_dict[node_type_idx][2][prediction_number_index]),3)
+                        results_dict[node_type_idx][3][prediction_number_index].append(node_type_results[prediction_number_index][3])
+                        results_dict[node_type_idx][4][prediction_number_index] = round(statistics.mean(results_dict[node_type_idx][1][prediction_number_index]),3)
+                        results_dict[node_type_idx][5][prediction_number_index] = round(statistics.mean(results_dict[node_type_idx][2][prediction_number_index]),3)
+                        results_dict[node_type_idx][6][prediction_number_index] = round(statistics.mean(results_dict[node_type_idx][3][prediction_number_index]),3)
         return results_dict
         
     def evaluate_node_type_on_snippet(self, source_code: str, target_node_type_idx: int, number_of_predictions: int, masking_rate: float):
@@ -68,17 +71,18 @@ class Evaluator:
 
         for prediction_number in range(0, number_of_predictions):
             predicted_code = predictions[prediction_number]
-            jaccard_distance = 0        #the closest to 1, the best
-            sorensen_dice_distance = 0  #the closest to 1, the best
+            jaccard_similarity = 0        #the closest to 1, the best
+            sorensen_dice_similarity = 0  #the closest to 1, the best
+            levenshtein_similarity = 0    #the closest to 1, the best
+
             if utils.is_balanced_snippet(predicted_code):
                 predicted_code_tree = self.tokenizer.parser.parse(bytes(predicted_code, "utf8")).root_node
-
                 predicted_code_types = utils.get_node_type_list(predicted_code_tree)
                 source_code_types = utils.get_node_type_list(source_code_tree)
-
-                jaccard_index = textdistance.jaccard(predicted_code_types,source_code_types)
-                sorensen_dice_index = textdistance.sorensen_dice(predicted_code_types, source_code_types)
-
-            results.append([len(source_code_nodes), jaccard_index, sorensen_dice_index])
+                jaccard_similarity = textdistance.jaccard.normalized_similarity(predicted_code_types,source_code_types)
+                sorensen_dice_similarity = textdistance.sorensen_dice.normalized_similarity(predicted_code_types, source_code_types)
+                levenshtein_similarity = textdistance.levenshtein.normalized_similarity(predicted_code_types,source_code_types)
+                
+            results.append([len(source_code_nodes), jaccard_similarity, sorensen_dice_similarity, levenshtein_similarity])
         return results
 

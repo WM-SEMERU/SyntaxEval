@@ -8,6 +8,8 @@ import CodeCheckList.utils as utils
 checkpoint = "huggingface/CodeBERTa-small-v1"
 number_of_samples = 50
 number_of_predictions_per_sample = 3
+masking_rate = 1
+gpu_available = True
 python_language = "python"
 save_path = "output/"
 ########## YOU NEED TO SET THIS FIRST #######
@@ -21,11 +23,11 @@ max_token_number = evaluator.tokenizer.tokenizer.max_len_single_sentence
 
 print('---STARTED EVALUATION----')
 
-### PILAS A ESTO 
-test_set = utils.get_random_sub_set_test_set(utils.get_test_sets(load_dataset("code_search_net", split='test'), python_language, evaluator.tokenizer.tokenizer.max_len_single_sentence, evaluator.tokenizer), number_of_samples)
-#test_set = utils.get_test_sets(load_dataset("code_search_net", split='test'), python_language, evaluator.tokenizer.tokenizer.max_len_single_sentence, evaluator.tokenizer)
+################ EVALUATOR
+test_set = utils.get_random_sub_set_test_set(utils.get_test_sets(load_dataset("code_search_net", split='test'), python_language, evaluator.tokenizer.tokenizer.max_len_single_sentence, evaluator.tokenizer), number_of_samples, gpu_available)
+#test_set = utils.get_test_sets(load_dataset("code_search_net", split='test'), python_language, evaluator.tokenizer.tokenizer.max_len_single_sentence, evaluator.tokenizer, gpu_available)
 
-results_dataframe = evaluator(test_set, number_of_predictions_per_sample)
+results_dataframe = evaluator(test_set, number_of_predictions_per_sample, masking_rate)
 results_dataframe = results_dataframe.sort_values(by=['occurences'], ascending=False)
 
 print(results_dataframe.head())
@@ -33,7 +35,7 @@ print(results_dataframe.head())
 print('---END EVALUATION----')
 print('---SAVING TABLE----')
 
-## PILAS A ESTO 
+################ OUTPUT
 results_dataframe.to_csv(save_path+checkpoint.replace("/","-")+"_"+str(number_of_samples)+"_"+str(number_of_predictions_per_sample)+".csv")
 #results_dataframe.to_csv(save_path+checkpoint.replace("/","-")+"_"+"all"+"_"+str(number_of_predictions_per_sample)+".csv")
 

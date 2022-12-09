@@ -125,7 +125,7 @@ def get_test_sets(test_set, language, max_token_number, model_tokenizer, with_ra
 
 # %% ../nbs/utils.ipynb 13
 def is_balanced_snippet(snippet):
-    percentage = 7
+    percentage = 6
     return (len(set(snippet))/len(snippet))*100 > percentage
 
 # %% ../nbs/utils.ipynb 14

@@ -8,7 +8,6 @@ import torch
 import CodeCheckList
 from .tokenizer import CodeTokenizer
 from transformers import AutoModelForMaskedLM, BatchEncoding
-import logging
 
 # %% ../nbs/predictor.ipynb 3
 class Predictor:
@@ -50,7 +49,7 @@ class Predictor:
         """Create a AutoModelForMaskedLM from a pretrained model."""
         model = AutoModelForMaskedLM.from_pretrained(name_or_path)
         if(gpu_available):
-            logging.warning("------------------Loading Model into GPU------------------")
+            print("------------------Loading Model into GPU------------------")
             model = AutoModelForMaskedLM.from_pretrained(name_or_path).to('cuda:0')
         return Predictor(tokenizer, model, gpu_available)
 
