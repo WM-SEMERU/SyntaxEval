@@ -24,8 +24,8 @@ class Predictor:
         tokens_tensor = code_encoding['input_ids']
         attention_mask = code_encoding['attention_mask']
         if(self.gpu_available):
-            tokens_tensor = tokens_tensor.to('cuda:0')
-            attention_mask = attention_mask.to('cuda:0')
+            tokens_tensor = tokens_tensor.to('cuda:3')
+            attention_mask = attention_mask.to('cuda:3')
         model_input = {'input_ids' : tokens_tensor,
           'attention_mask' : attention_mask}
         model_prediction = self.model(**model_input)
@@ -50,6 +50,6 @@ class Predictor:
         model = AutoModelForMaskedLM.from_pretrained(name_or_path)
         if(gpu_available):
             print("------------------Loading Model into GPU------------------")
-            model = AutoModelForMaskedLM.from_pretrained(name_or_path).to('cuda:0')
+            model = AutoModelForMaskedLM.from_pretrained(name_or_path).to('cuda:3')
         return Predictor(tokenizer, model, gpu_available)
 
