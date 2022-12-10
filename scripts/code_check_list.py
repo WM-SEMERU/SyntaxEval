@@ -11,7 +11,7 @@ number_of_predictions_per_sample = 3
 masking_rate = 1
 gpu_available = False
 python_language = "python"
-save_path = "output/"
+save_path = "output/CodeBERTa-small-v1/"
 ########## YOU NEED TO SET THIS FIRST #######
 
 ################ LOAD GRAMMAR
