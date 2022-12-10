@@ -82,7 +82,6 @@ class Evaluator:
                 jaccard_similarity = textdistance.jaccard.normalized_similarity(predicted_code_types,source_code_types)
                 sorensen_dice_similarity = textdistance.sorensen_dice.normalized_similarity(predicted_code_types, source_code_types)
                 levenshtein_similarity = textdistance.levenshtein.normalized_similarity(predicted_code_types,source_code_types)
-                
             results.append([len(source_code_nodes), jaccard_similarity, sorensen_dice_similarity, levenshtein_similarity])
         return results
 

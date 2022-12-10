@@ -14,7 +14,7 @@ python_language = "python"
 save_path = "output/"
 ########## YOU NEED TO SET THIS FIRST #######
 
-
+################ LOAD GRAMMAR
 languages = [python_language]
 loader.download_grammars(languages)
 
