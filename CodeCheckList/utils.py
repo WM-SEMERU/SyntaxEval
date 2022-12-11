@@ -2,14 +2,11 @@
 
 # %% auto 0
 __all__ = ['traverse', 'find_nodes', 'get_node_type_list', 'unroll_node_types', 'convert_to_offset', 'get_sub_set_test_set',
-           'get_random_sub_set_test_set', 'is_valid_code', 'is_balanced_snippet', 'get_test_sets',
-           'get_elements_by_percentage']
+           'get_random_sub_set_test_set', 'get_test_sets', 'get_elements_by_percentage']
 
 # %% ../nbs/utils.ipynb 2
 import CodeCheckList
-import ast
 import random
-import re
 
 # %% ../nbs/utils.ipynb 3
 # From: https://github.com/github/CodeSearchNet/tree/master/function_parser
@@ -108,30 +105,14 @@ def get_random_sub_set_test_set(test_set, test_size:int):
     return sub_samples
 
 # %% ../nbs/utils.ipynb 11
-def is_valid_code(code):
-    try:
-        ast.parse(code)
-    except:
-        return False
-    return True
-    
-
-# %% ../nbs/utils.ipynb 12
-def is_balanced_snippet(snippet, threshold):
-    proportion = len(re.findall(r"([a-zA-Z0-9])", snippet))/len(re.findall(r"([^a-zA-Z0-9])", snippet))
-    num_buggy_assigns = len(re.findall(r"[^a-zA-Z0-9]+[=]+[^a-zA-Z0-9=]+[=]+[^a-zA-Z0-9=]+", snippet))
-    return proportion > threshold and num_buggy_assigns == 0
-
-# %% ../nbs/utils.ipynb 13
 def get_test_sets(test_set, language, max_token_number, model_tokenizer, with_ranks=False, num_proc=1):
     subset = test_set.filter(lambda sample: True if sample['language']== language 
             and len(sample['func_code_tokens']) < max_token_number
             and len(model_tokenizer.tokenizer(sample['whole_func_string'])['input_ids']) < max_token_number
-            and is_balanced_snippet(sample['whole_func_string'], 1)
             else False, num_proc=num_proc)
     return subset
 
-# %% ../nbs/utils.ipynb 14
+# %% ../nbs/utils.ipynb 12
 def get_elements_by_percentage(elements, percentage):
     indexes = set(random.sample(list(range(len(elements))), int(percentage*len(elements))))
     return [n for i,n in enumerate(elements) if i in indexes]

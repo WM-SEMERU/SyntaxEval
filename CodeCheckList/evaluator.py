@@ -4,6 +4,7 @@
 __all__ = ['Evaluator']
 
 # %% ../nbs/evaluator.ipynb 2
+import os
 import CodeCheckList
 import pandas as pd
 
@@ -11,6 +12,7 @@ import CodeCheckList.utils as utils
 from .tokenizer import CodeTokenizer
 from .masker import Masker
 from .predictor import Predictor
+from .judge import Judge
 
 import statistics
 import textdistance
@@ -19,9 +21,11 @@ import textdistance
 class Evaluator:
     """Evaluator Module to perform all AST Evaluations"""
     def __init__(self, checkpoint: str, language, gpu_available=False):
+        os.environ["TOKENIZERS_PARALLELISM"] = "true"
         self.tokenizer = CodeTokenizer.from_pretrained(checkpoint, language)
         self.masker = Masker(self.tokenizer)
         self.predictor = Predictor.from_pretrained(checkpoint, self.tokenizer, gpu_available)
+        self.judge = Judge(self.tokenizer)
 
     def __call__(self, test_set, number_of_predictions: int, masking_rate: float):
         results_dict = self.evaluate_test_set(test_set, number_of_predictions, masking_rate)
@@ -43,7 +47,7 @@ class Evaluator:
                                 [0 for i in range(0,number_of_predictions)],  #avg levenshtein per prediction
                                 ])
         for sample_index, sample in enumerate(test_set):
-            print('--------evaluating sample:'+str(sample_index)+' --------')
+            print('-------- evaluating sample:'+str(sample_index)+' --------')
             for node_type_idx, node_type in enumerate(self.tokenizer.node_types):
                 node_type_results = self.evaluate_node_type_on_snippet(sample['whole_func_string'], node_type_idx, number_of_predictions, masking_rate)
                 if(len(node_type_results)>0):
@@ -61,9 +65,8 @@ class Evaluator:
         return results_dict
         
     def evaluate_node_type_on_snippet(self, source_code: str, target_node_type_idx: int, number_of_predictions: int, masking_rate: float):
-        #print('type: '+str(self.tokenizer.node_types[target_node_type_idx]))
         results=[]
-
+        
         source_code_tree = self.tokenizer.parser.parse(bytes(source_code, "utf8"))
         source_code_nodes = []
         utils.find_nodes(source_code_tree.root_node, self.tokenizer.node_types[target_node_type_idx], source_code_nodes)
@@ -75,23 +78,7 @@ class Evaluator:
 
         for prediction_number in range(0, number_of_predictions):
             predicted_code = predictions[prediction_number]
-            jaccard_similarity = 0        #the closest to 1, the best
-            sorensen_dice_similarity = 0  #the closest to 1, the best
-            levenshtein_similarity = 0    #the closest to 1, the best
-            if utils.is_balanced_snippet(predicted_code, 1):
-                #"""
-                print('~~~~~~~~~~~~~~~~~~~~~~')
-                print(predicted_code)
-                #"""
-                predicted_code_tree = self.tokenizer.parser.parse(bytes(predicted_code, "utf8"))
-                predicted_code_types = utils.get_node_type_list(predicted_code_tree.root_node)
-                source_code_types = utils.get_node_type_list(source_code_tree.root_node)
-                jaccard_similarity = textdistance.jaccard.normalized_similarity(predicted_code_types,source_code_types)
-                sorensen_dice_similarity = textdistance.sorensen_dice.normalized_similarity(predicted_code_types, source_code_types)
-                levenshtein_similarity = textdistance.levenshtein.normalized_similarity(predicted_code_types,source_code_types)
-            #else:
-            #    print('ignore')
-            #    print(predicted_code)
-            results.append([len(source_code_nodes), jaccard_similarity, sorensen_dice_similarity, levenshtein_similarity])
+            prediction_results = self.judge(source_code, predicted_code)
+            results.append([len(source_code_nodes), prediction_results[0], prediction_results[1], prediction_results[2]])
         return results
 
