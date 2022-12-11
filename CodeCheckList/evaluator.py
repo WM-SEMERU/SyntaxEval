@@ -49,20 +49,24 @@ class Evaluator:
                 if(len(node_type_results)>0):
                     results_dict[node_type_idx][0] += node_type_results[0][0]
                     for prediction_number_index in range(0, number_of_predictions):
-                        results_dict[node_type_idx][1][prediction_number_index].append(node_type_results[prediction_number_index][1])
-                        results_dict[node_type_idx][2][prediction_number_index].append(node_type_results[prediction_number_index][2])
-                        results_dict[node_type_idx][3][prediction_number_index].append(node_type_results[prediction_number_index][3])
-                        results_dict[node_type_idx][4][prediction_number_index] = round(statistics.mean(results_dict[node_type_idx][1][prediction_number_index]),3)
-                        results_dict[node_type_idx][5][prediction_number_index] = round(statistics.mean(results_dict[node_type_idx][2][prediction_number_index]),3)
-                        results_dict[node_type_idx][6][prediction_number_index] = round(statistics.mean(results_dict[node_type_idx][3][prediction_number_index]),3)
+                        if(node_type_results[prediction_number_index][1]!=None):
+                            results_dict[node_type_idx][1][prediction_number_index].append(node_type_results[prediction_number_index][1])
+                            results_dict[node_type_idx][4][prediction_number_index] = round(statistics.mean(results_dict[node_type_idx][1][prediction_number_index]),3)
+                        if(node_type_results[prediction_number_index][2]!=None):
+                            results_dict[node_type_idx][2][prediction_number_index].append(node_type_results[prediction_number_index][2])
+                            results_dict[node_type_idx][5][prediction_number_index] = round(statistics.mean(results_dict[node_type_idx][2][prediction_number_index]),3)
+                        if(node_type_results[prediction_number_index][3]!=None):
+                            results_dict[node_type_idx][3][prediction_number_index].append(node_type_results[prediction_number_index][3])
+                            results_dict[node_type_idx][6][prediction_number_index] = round(statistics.mean(results_dict[node_type_idx][3][prediction_number_index]),3)
         return results_dict
         
     def evaluate_node_type_on_snippet(self, source_code: str, target_node_type_idx: int, number_of_predictions: int, masking_rate: float):
+        #print('type: '+str(self.tokenizer.node_types[target_node_type_idx]))
         results=[]
 
-        source_code_tree = self.tokenizer.parser.parse(bytes(source_code, "utf8")).root_node
+        source_code_tree = self.tokenizer.parser.parse(bytes(source_code, "utf8"))
         source_code_nodes = []
-        utils.find_nodes(source_code_tree,self.tokenizer.node_types[target_node_type_idx], source_code_nodes)
+        utils.find_nodes(source_code_tree.root_node, self.tokenizer.node_types[target_node_type_idx], source_code_nodes)
         if len(source_code_nodes) == 0:
             return results
 
@@ -74,14 +78,20 @@ class Evaluator:
             jaccard_similarity = 0        #the closest to 1, the best
             sorensen_dice_similarity = 0  #the closest to 1, the best
             levenshtein_similarity = 0    #the closest to 1, the best
-
-            if utils.is_balanced_snippet(predicted_code):
-                predicted_code_tree = self.tokenizer.parser.parse(bytes(predicted_code, "utf8")).root_node
-                predicted_code_types = utils.get_node_type_list(predicted_code_tree)
-                source_code_types = utils.get_node_type_list(source_code_tree)
+            if utils.is_balanced_snippet(predicted_code, 1):
+                #"""
+                print('~~~~~~~~~~~~~~~~~~~~~~')
+                print(predicted_code)
+                #"""
+                predicted_code_tree = self.tokenizer.parser.parse(bytes(predicted_code, "utf8"))
+                predicted_code_types = utils.get_node_type_list(predicted_code_tree.root_node)
+                source_code_types = utils.get_node_type_list(source_code_tree.root_node)
                 jaccard_similarity = textdistance.jaccard.normalized_similarity(predicted_code_types,source_code_types)
                 sorensen_dice_similarity = textdistance.sorensen_dice.normalized_similarity(predicted_code_types, source_code_types)
                 levenshtein_similarity = textdistance.levenshtein.normalized_similarity(predicted_code_types,source_code_types)
+            #else:
+            #    print('ignore')
+            #    print(predicted_code)
             results.append([len(source_code_nodes), jaccard_similarity, sorensen_dice_similarity, levenshtein_similarity])
         return results
 
