@@ -119,7 +119,7 @@ def is_valid_code(code):
 # %% ../nbs/utils.ipynb 12
 def is_balanced_snippet(snippet, threshold):
     proportion = len(re.findall(r"([a-zA-Z0-9])", snippet))/len(re.findall(r"([^a-zA-Z0-9])", snippet))
-    num_buggy_assigns = len(re.findall(r"([^a-zA-Z0-9 ])+[ ]+[=]+([^a-zA-Z0-9])+\n", snippet))
+    num_buggy_assigns = len(re.findall(r"[^a-zA-Z0-9]+[=]+[^a-zA-Z0-9=]+[=]+[^a-zA-Z0-9=]+", snippet))
     return proportion > threshold and num_buggy_assigns == 0
 
 # %% ../nbs/utils.ipynb 13

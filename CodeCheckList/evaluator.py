@@ -28,7 +28,7 @@ class Evaluator:
         results_dataframe = pd.DataFrame([], columns=[
             'ast_element', 'occurences', 'jaccard', 'sorensen_dice', 'levenshtein', 'jaccard_avg', 'sorensen_dice_avg', 'levenshtein_avg'])
         for result_index, result in enumerate(results_dict):
-            results_dataframe.loc[len(results_dataframe.index)] = [self.tokenizer.node_types[result_index], result[0], result[1], result[2], result[3], result[4], result[5], result[6]]
+            results_dataframe.loc[len(results_dataframe.index)] = [self.tokenizer.node_types[result_index], result[0], tuple(tuple(l) for l in result[1]), tuple(tuple(l) for l in result[2]), tuple(tuple(l) for l in result[3]), tuple(result[4]), tuple(result[5]), tuple(result[6])]
         return results_dataframe
     
     def evaluate_test_set(self, test_set, number_of_predictions: int, masking_rate: float):
