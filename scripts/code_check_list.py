@@ -7,7 +7,7 @@ import CodeCheckList.utils as utils
 ########## YOU NEED TO SET THIS FIRST #######
 checkpoint = "huggingface/CodeBERTa-small-v1"
 number_of_samples = 100
-masking_rate = 100/100
+masking_rate = 25/100
 number_of_predictions_per_sample = 3
 gpu_available = True
 python_language = "python"
