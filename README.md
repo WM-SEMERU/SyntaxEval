@@ -14,7 +14,8 @@ pip install CodeCheckList
 
 ## How to use
 
-Fill me in please! Don’t forget code examples:
+Fill me in please! Don’t forget code examples: asd asd
+sadaSDASDASDASDADSASDA
 
 ``` python
 1+1

@@ -1,20 +1,37 @@
+ipynb-filters: [nbdev_filter]
+
 project:
   type: website
+  output-dir: _docs
+  preview:
+    port: 3000
+    browser: false
 
 format:
   html:
     theme: cosmo
     css: styles.css
     toc: true
+    toc-depth: 4
 
 website:
+  title: "CodeCheckList"
+  site-url: "https://WM-SEMERU.github.io/CodeCheckList"
+  description: "Behavioral Testing for Source COde Generation"
   twitter-card: true
   open-graph: true
+  repo-branch: master
+  repo-url: "https://github.com/WM-SEMERU/CodeCheckList"
   repo-actions: [issue]
   navbar:
     background: primary
     search: true
+    right:
+      - icon: github
+        href: "https://github.com/WM-SEMERU/CodeCheckList"
   sidebar:
-    style: floating
+    style: "floating"
 
-metadata-files: [nbdev.yml, sidebar.yml]
+metadata-files: 
+  - sidebar.yml
+  - custom.yml
