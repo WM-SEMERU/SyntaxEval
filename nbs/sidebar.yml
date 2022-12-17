@@ -1,0 +1,11 @@
+website:
+  sidebar:
+    contents:
+      - index.ipynb
+      - evaluator.ipynb
+      - judge.ipynb
+      - loader.ipynb
+      - masker.ipynb
+      - predictor.ipynb
+      - tokenizer.ipynb
+      - utils.ipynb

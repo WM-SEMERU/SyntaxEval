@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "CodeCheckList"
+  site-url: "https://WM-SEMERU.github.io/CodeCheckList"
+  description: "Behavioral Testing for Source COde Generation"
+  repo-branch: master
+  repo-url: "https://github.com/WM-SEMERU/CodeCheckList"
