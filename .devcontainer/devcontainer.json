@@ -1,0 +1,24 @@
+//This version is compatible with semeru T5 nvidia libraries
+//Update your folders mapping accordingly to your project
+{
+	"name": "Code Check List 1.0",
+	"build": { 
+		"context": "..",
+		"dockerfile": "Dockerfile",
+		"args": {
+			"NODE_VERSION": "none"
+		}
+	},
+	"mounts": [
+		"source=/nfs/semeru/projects/capabilities/,target=/workspaces/CodeCheckList/data,type=bind,consistency=cached",
+		"source=/nfs/semeru/data/dvc,target=/tf/dvc,type=bind,consistency=cached",
+		"source=/scratch/svelascodimate/datax,target=/workspaces/CodeCheckList/datax,type=bind,consistency=cached",
+		"source=/nfs/semeru/semeru_datasets/,target=/workspaces/CodeCheckList/semeru-datasets,type=bind,consistency=cached"
+
+	],
+    "remoteEnv": {
+        //"MY_PROJECT_NAME": "The-container-name-here" //NOTE: make this name the same as the folder containing the repo
+        "MY_PROJECT_NAME": "CodeCheckList"
+    },
+	"runArgs": [ "--gpus", "all"]	
+}
