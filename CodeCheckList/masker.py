@@ -4,13 +4,12 @@
 __all__ = ['Masker']
 
 # %% ../nbs/masker.ipynb 2
-import CodeCheckList
 import CodeCheckList.utils as utils
 from .tokenizer import CodeTokenizer
 from tree_sitter import Parser
 import random
 
-# %% ../nbs/masker.ipynb 3
+# %% ../nbs/masker.ipynb 4
 class Masker():
     """Masker module"""
     def __init__(self, code_tokenizer: CodeTokenizer):

@@ -5,7 +5,6 @@ __all__ = ['traverse', 'find_nodes', 'get_node_type_list', 'unroll_node_types', 
            'get_random_sub_set_test_set', 'get_test_sets', 'get_elements_by_percentage']
 
 # %% ../nbs/utils.ipynb 2
-import CodeCheckList
 import random
 
 # %% ../nbs/utils.ipynb 3
@@ -51,29 +50,22 @@ def get_node_type_list(
 
 # %% ../nbs/utils.ipynb 7
 def unroll_node_types(
-    nested_node_types: dict, # node_types from tree-sitter
+    nested_node_types: dict  # node_types from tree-sitter
 ) -> list: # list of node types
-    """Unroll nested node types into a flat list of node types. This includes subtypes as well."""
-    node_types = [node_type["type"] for node_type in nested_node_types]
-    node_subtypes = [
-        node_subtype["type"]
-        for node_type in nested_node_types
-        if "subtypes" in node_type
-        for node_subtype in node_type["subtypes"]
-    ]
-    children_subtypes = [
-        children_type["type"]
-        for node_type in nested_node_types
-        if "children" in node_type
-        for children_type in node_type["children"]["types"]
-    ]
-    alias_subtypes = [
-        children_type["type"]
-        for node_type in nested_node_types
-        if "fields" in node_type and "alias" in node_type["fields"] 
-        for children_type in node_type["fields"]["alias"]["types"]
-    ]
-    return list(set(node_types + node_subtypes + children_subtypes + alias_subtypes + ['ERROR']))
+    def iterate_and_unroll_dict(nested_node_types: dict, all_node_types: set):
+        for key, value in nested_node_types.items():
+            if key == 'type' and type(value) == str:
+                all_node_types.add(value)
+            if type(value) == dict:
+                iterate_and_unroll_dict(value, all_node_types)
+            if type(value) == list:
+                for element in value:
+                    iterate_and_unroll_dict(element, all_node_types) 
+    all_node_types = set()
+    for dictionary in nested_node_types:
+        iterate_and_unroll_dict(dictionary, all_node_types)
+    all_node_types.add('ERROR')
+    return list(all_node_types)
 
 # %% ../nbs/utils.ipynb 8
 def convert_to_offset(

@@ -5,7 +5,6 @@ __all__ = ['Evaluator']
 
 # %% ../nbs/evaluator.ipynb 2
 import os
-import CodeCheckList
 import pandas as pd
 
 import CodeCheckList.utils as utils
@@ -17,7 +16,7 @@ from .judge import Judge
 import statistics
 import textdistance
 
-# %% ../nbs/evaluator.ipynb 3
+# %% ../nbs/evaluator.ipynb 4
 class Evaluator:
     """Evaluator Module to perform all AST Evaluations"""
     def __init__(self, checkpoint: str, language, gpu_available=False):

@@ -5,11 +5,10 @@ __all__ = ['Predictor']
 
 # %% ../nbs/predictor.ipynb 2
 import torch
-import CodeCheckList
 from .tokenizer import CodeTokenizer
 from transformers import AutoModelForMaskedLM, BatchEncoding
 
-# %% ../nbs/predictor.ipynb 3
+# %% ../nbs/predictor.ipynb 4
 class Predictor:
     """Predictor Module"""
     def __init__(self, tokenizer, model, gpu_available):
