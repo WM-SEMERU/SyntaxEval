@@ -19,10 +19,16 @@ class Masker():
     self,                            #self
     code: str,                       #source code snippet to mask
     encoding: list,                  #list of encodings
-    target_node_type_id: int,        #target node type id to search 
-    masking_rate: float              #masking rate to apply [0-1]
+    target_node_type_id: int,        #target node type id to search, -1: random masking
+    masking_rate: float,             #masking rate to apply [0-1]
+    random_masking: float = False,   #random_masking, false by default
     ):  
         node_mask_id = self.code_tokenizer.tokenizer.mask_token_id
+        if random_masking:
+            positions = random.sample(range(len(encoding['input_ids'])), int(masking_rate*len(encoding['input_ids'])))
+            for idx in positions:
+                encoding['input_ids'][idx]=node_mask_id
+            return encoding
         tree = self.code_tokenizer.parser.parse(bytes(code, "utf8"))
         filtered_nodes = []
         utils.find_nodes(tree.root_node, self.code_tokenizer.node_types[target_node_type_id], filtered_nodes)
@@ -33,4 +39,5 @@ class Masker():
             for filtered_node_offset in filtered_node_offsets:
                 if offset[0] >= filtered_node_offset[0] and offset[1]<= filtered_node_offset[1]:
                     encoding['input_ids'][index] = node_mask_id
+        
         return encoding
