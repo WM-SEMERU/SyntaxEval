@@ -15,6 +15,7 @@ class Predictor:
         self.model = model
         self.tokenizer = tokenizer
         self.gpu_available = gpu_available
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     def __call__(self, masked_code_encoding: BatchEncoding, code_encoding: BatchEncoding, top_k: int):
         masked_indexes = list(map(lambda entry: entry[0],
@@ -23,8 +24,8 @@ class Predictor:
         tokens_tensor = code_encoding['input_ids']
         attention_mask = code_encoding['attention_mask']
         if(self.gpu_available):
-            tokens_tensor = tokens_tensor.to('cuda:3')
-            attention_mask = attention_mask.to('cuda:3')
+            tokens_tensor = tokens_tensor.to(self.device)
+            attention_mask = attention_mask.to(self.device)
         model_input = {'input_ids' : tokens_tensor,
           'attention_mask' : attention_mask}
         model_prediction = self.model(**model_input)
@@ -49,6 +50,6 @@ class Predictor:
         model = AutoModelForMaskedLM.from_pretrained(name_or_path)
         if(gpu_available):
             print("------------------Loading Model into GPU------------------")
-            model = AutoModelForMaskedLM.from_pretrained(name_or_path).to('cuda:3')
+            model = AutoModelForMaskedLM.from_pretrained(name_or_path).to("cuda:0")
         return Predictor(tokenizer, model, gpu_available)
 

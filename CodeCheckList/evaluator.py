@@ -82,8 +82,10 @@ class Evaluator:
         source_code_nodes = []
         utils.find_nodes(source_code_tree.root_node, self.tokenizer.node_types[target_node_type_idx], source_code_nodes)
         if len(source_code_nodes) == 0:
-            return results
+            return results, 0
         masked_code_encoding, number_of_masked_tokens = self.masker.mask_ast_tokens(source_code, self.tokenizer(source_code), target_node_type_idx, masking_rate)
+        if number_of_masked_tokens == 0: #Not masking anything
+            return results, 0
         predictions = self.predictor(masked_code_encoding, self.tokenizer.tokenizer(source_code, return_tensors='pt'), number_of_predictions)  
         for prediction_number in range(0, number_of_predictions):
             predicted_code = predictions[prediction_number]
