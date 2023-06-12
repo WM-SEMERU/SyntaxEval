@@ -26,7 +26,19 @@ class Evaluator:
         self.predictor = Predictor.from_pretrained(checkpoint, self.tokenizer, gpu_available)
         self.judge = Judge(self.tokenizer)
 
-    def __call__(self, test_set, number_of_predictions: int, masking_rate: float):
+    def __call__(self, test_set, concepts: list, masking_rate: float, code_field: str):
+        result_list = self.evaluate_concepts_in_test_set(concepts, test_set, masking_rate, code_field)
+        results_dataframe = pd.DataFrame([], columns=[
+            'sample_id', 'ast_element', 'sample', 'masking_rate', 
+            'ast_element_ocurrences','mask_jaccard', 'mask_sorensen_dice', 'mask_levenshtein', 
+            'mask_random_jaccard', 'mask_random_sorensen_dice', 'mask_random_levenshtein'
+            ]) ## TODO ADD CONFOUNDERS
+        for result_index, result in enumerate(result_list):
+            results_dataframe.loc[len(results_dataframe.index)] = result
+        return results_dataframe
+    
+    def pipeline(self, test_set, number_of_predictions: int, masking_rate: float):
+        """Deprecated"""
         results_dict = self.evaluate_test_set(test_set, number_of_predictions, masking_rate)
         results_dataframe = pd.DataFrame([], columns=[
             'ast_element', 'occurences', 'jaccard', 'sorensen_dice', 'levenshtein', 'jaccard_avg', 'sorensen_dice_avg', 'levenshtein_avg'])
@@ -35,6 +47,7 @@ class Evaluator:
         return results_dataframe
     
     def evaluate_test_set(self, test_set, number_of_predictions: int, masking_rate: float):
+        """Deprecated"""
         results_dict = []
         for node_type in self.tokenizer.node_types:
             results_dict.append([0,                                           #ocurrences
@@ -65,19 +78,39 @@ class Evaluator:
         
     def evaluate_node_type_on_snippet(self, source_code: str, target_node_type_idx: int, number_of_predictions: int, masking_rate: float):
         results=[]
-        
         source_code_tree = self.tokenizer.parser.parse(bytes(source_code, "utf8"))
         source_code_nodes = []
         utils.find_nodes(source_code_tree.root_node, self.tokenizer.node_types[target_node_type_idx], source_code_nodes)
         if len(source_code_nodes) == 0:
             return results
-
-        masked_code_encoding = self.masker(source_code, self.tokenizer(source_code), target_node_type_idx, masking_rate)
+        masked_code_encoding, number_of_masked_tokens = self.masker.mask_ast_tokens(source_code, self.tokenizer(source_code), target_node_type_idx, masking_rate)
         predictions = self.predictor(masked_code_encoding, self.tokenizer.tokenizer(source_code, return_tensors='pt'), number_of_predictions)  
-
         for prediction_number in range(0, number_of_predictions):
             predicted_code = predictions[prediction_number]
             prediction_results = self.judge(source_code, predicted_code)
             results.append([len(source_code_nodes), prediction_results[0], prediction_results[1], prediction_results[2]])
+        return results, number_of_masked_tokens
+    
+    def evaluate_random_mask_on_snippet(self, source_code: str, number_of_predictions:int, number_tokens_to_mask: int):
+        results=[]
+        masked_code_encoding = self.masker.mask_random_tokens(self.tokenizer(source_code), number_tokens_to_mask)
+        predictions = self.predictor(masked_code_encoding, self.tokenizer.tokenizer(source_code, return_tensors='pt'), number_of_predictions)
+        for prediction_number in range(0, number_of_predictions):
+            predicted_code = predictions[prediction_number]
+            prediction_results = self.judge(source_code, predicted_code)
+            results.append([0, prediction_results[0], prediction_results[1], prediction_results[2]])
         return results
+    
+    def evaluate_concepts_in_test_set(self, concepts: list, test_set, masking_rate: float, code_field: str):
+        test_set_results = []
+        for sample_index, sample in enumerate(test_set):
+            print('-------- evaluating sample:'+str(sample_index)+' --------')
+            for concept in concepts: 
+                concept_mask_results, number_of_masked_tokens = self.evaluate_node_type_on_snippet(sample[code_field], self.tokenizer.node_types.index(concept), 1, masking_rate)
+                random_mask_results = self.evaluate_random_mask_on_snippet(sample[code_field], 1, number_of_masked_tokens)
+                if len(concept_mask_results)>0:
+                    test_set_results.append([sample_index, concept, sample[code_field], masking_rate,
+                                            concept_mask_results[0][0], concept_mask_results[0][1], concept_mask_results[0][2], concept_mask_results[0][3], 
+                                            random_mask_results[0][1], random_mask_results[0][2], random_mask_results[0][3]]) #TODO ADD CONFOUNDERS
+        return test_set_results
 

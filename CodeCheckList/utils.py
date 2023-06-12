@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['traverse', 'find_nodes', 'get_node_type_list', 'unroll_node_types', 'convert_to_offset', 'get_sub_set_test_set',
-           'get_random_sub_set_test_set', 'get_test_sets', 'get_elements_by_percentage']
+           'get_random_sub_set_test_set', 'get_test_sets', 'get_test_sets_galeras', 'get_elements_by_percentage']
 
 # %% ../nbs/utils.ipynb 2
 import random
@@ -105,6 +105,19 @@ def get_test_sets(test_set, language, max_token_number, model_tokenizer, with_ra
     return subset
 
 # %% ../nbs/utils.ipynb 12
+def get_test_sets_galeras(test_set: list, language, max_token_number, model_tokenizer):
+    values = []
+    for sample in test_set:
+        try: 
+            if sample['language'] == language and len(model_tokenizer.tokenizer(sample['code'])['input_ids']) < max_token_number:
+                values.append(sample)
+        except:
+            print('--------------------------ERROR-----------------------------')
+            print(sample)
+    return values
+    #return [sample for dic in test_set for sample in dic.values() if sample['language'] == language and len(model_tokenizer.tokenizer(sample['code'])['input_ids']) < max_token_number ]
+
+# %% ../nbs/utils.ipynb 13
 def get_elements_by_percentage(elements, percentage):
     indexes = set(random.sample(list(range(len(elements))), int(percentage*len(elements))))
     return [n for i,n in enumerate(elements) if i in indexes]
