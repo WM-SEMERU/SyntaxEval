@@ -19,15 +19,19 @@ import textdistance
 # %% ../nbs/evaluator.ipynb 4
 class Evaluator:
     """Evaluator Module to perform all AST Evaluations"""
-    def __init__(self, checkpoint: str, language, gpu_available=False):
+    def __init__(self, checkpoint: str, language, gpu_available=False, save_path: str = None):
         os.environ["TOKENIZERS_PARALLELISM"] = "true"
         self.tokenizer = CodeTokenizer.from_pretrained(checkpoint, language)
         self.masker = Masker(self.tokenizer)
         self.predictor = Predictor.from_pretrained(checkpoint, self.tokenizer, gpu_available)
         self.judge = Judge(self.tokenizer)
+        self.save_path = save_path
 
     def __call__(self, test_set, concepts: list, masking_rate: float, code_field: str):
         result_list = self.evaluate_concepts_in_test_set(concepts, test_set, masking_rate, code_field)
+        return self.save_checkpoint(result_list)
+    
+    def save_checkpoint(self, result_list: list):
         results_dataframe = pd.DataFrame([], columns=[
             'sample_id', 'ast_element', 'sample', 'masking_rate', 'numper_of_masked_tokens',
             'ast_element_ocurrences','mask_jaccard', 'mask_sorensen_dice', 'mask_levenshtein', 
@@ -36,7 +40,10 @@ class Evaluator:
             ])
         for result_index, result in enumerate(result_list):
             results_dataframe.loc[len(results_dataframe.index)] = result
+        if self.save_path != None:
+            results_dataframe.to_csv(self.save_path)
         return results_dataframe
+
     
     def pipeline(self, test_set, number_of_predictions: int, masking_rate: float):
         """Deprecated"""
@@ -117,6 +124,9 @@ class Evaluator:
                                             concept_mask_results[0][0], concept_mask_results[0][1], concept_mask_results[0][2], concept_mask_results[0][3], 
                                             random_mask_results[0][1], random_mask_results[0][2], random_mask_results[0][3],
                                             sample['n_ast_errors'], sample['ast_levels'], sample['n_whitespaces_'], sample['complexity'], sample['nloc'], sample['token_counts'], sample['n_ast_nodes'] #CONFOUNDERS
-                                            ]) 
+                                            ])
+                    if sample_index % 1000 == 0: 
+                        self.save_checkpoint(test_set_results)
+        self.save_checkpoint(test_set_results)
         return test_set_results
 
