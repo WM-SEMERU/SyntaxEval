@@ -11,11 +11,13 @@ checkpoint = "huggingface/CodeBERTa-small-v1"
 masking_rate = 100/100
 gpu_available = True
 python_language = "python"
-save_path = "/workspaces/CodeCheckList/data/linguistic_capabilities/"+checkpoint.replace("/","-")+"_"+str(masking_rate*100)+".csv"
+random_sampling = 10
 
 concepts = ['for_statement', 'while_statement', 'return_statement', 'if_statement', 
             'comparison_operator', 'boolean_operator', 'for_in_clause', 'if_clause', 'identifier' ,'string', 'parameters'] #11
-random_sampling = 15
+
+save_path = "/workspaces/CodeCheckList/data/linguistic_capabilities/"+checkpoint.replace("/","-")+"_"+str(masking_rate*100)+"_"+str(random_sampling)+".csv"
+
 
 ################ GALERAS PATHS
 galeras_paths = [
