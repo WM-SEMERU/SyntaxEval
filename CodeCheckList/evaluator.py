@@ -27,15 +27,16 @@ class Evaluator:
         self.judge = Judge(self.tokenizer)
         self.save_path = save_path
 
-    def __call__(self, test_set, concepts: list, masking_rate: float, code_field: str):
-        result_list = self.evaluate_concepts_in_test_set(concepts, test_set, masking_rate, code_field)
+    def __call__(self, test_set, concepts: list, masking_rate: float, code_field: str, random_sampling: int):
+        result_list = self.evaluate_concepts_in_test_set(concepts, test_set, masking_rate, code_field, random_sampling)
         return self.save_checkpoint(result_list)
     
     def save_checkpoint(self, result_list: list):
         results_dataframe = pd.DataFrame([], columns=[
             'sample_id', 'ast_element', 'sample', 'masking_rate', 'numper_of_masked_tokens',
             'ast_element_ocurrences','mask_jaccard', 'mask_sorensen_dice', 'mask_levenshtein', 
-            'mask_random_jaccard', 'mask_random_sorensen_dice', 'mask_random_levenshtein',
+            'mask_random_avg_jaccard', 'mask_random_avg_sorensen_dice', 'mask_random_avg_levenshtein',
+            'mask_random_std_jaccard', 'mask_random_std_sorensen_dice', 'mask_random_std_levenshtein',
             'n_ast_errors', 'ast_levels', 'n_whitespaces_', 'complexity', 'nloc', 'token_counts', 'n_ast_nodes' #CONFOUNDERS
             ])
         for result_index, result in enumerate(result_list):
@@ -111,21 +112,29 @@ class Evaluator:
             results.append([0, prediction_results[0], prediction_results[1], prediction_results[2]])
         return results
     
-    def evaluate_concepts_in_test_set(self, concepts: list, test_set, masking_rate: float, code_field: str):
+    def evaluate_concepts_in_test_set(self, concepts: list, test_set, masking_rate: float, code_field: str, random_sampling: int):
         test_set_results = []
         for sample_index, sample in enumerate(test_set):
             print('-------- evaluating sample:'+str(sample_index)+' --------')
             for concept in concepts: 
                 concept_mask_results, number_of_masked_tokens = self.evaluate_node_type_on_snippet(sample[code_field], self.tokenizer.node_types.index(concept), 1, masking_rate)
-                random_mask_results = self.evaluate_random_mask_on_snippet(sample[code_field], 1, number_of_masked_tokens)
+                
+                random_mask_results = [[],[],[]]
+                for idx in range(0, random_sampling):
+                    random_mask_result = self.evaluate_random_mask_on_snippet(sample[code_field], 1, number_of_masked_tokens)
+                    random_mask_results[0].append(random_mask_result[0][1])
+                    random_mask_results[1].append(random_mask_result[0][2])
+                    random_mask_results[2].append(random_mask_result[0][3])
+
                 if len(concept_mask_results)>0:
                     'n_ast_errors', 'ast_levels', 'n_whitespaces_', 'complexity', 'nloc', 'token_counts', 'n_ast_nodes'
                     test_set_results.append([sample_index, concept, sample[code_field], masking_rate, number_of_masked_tokens,
                                             concept_mask_results[0][0], concept_mask_results[0][1], concept_mask_results[0][2], concept_mask_results[0][3], 
-                                            random_mask_results[0][1], random_mask_results[0][2], random_mask_results[0][3],
+                                            statistics.mean(random_mask_results[0]), statistics.mean(random_mask_results[1]), statistics.mean(random_mask_results[2]),
+                                            statistics.stdev(random_mask_results[0]), statistics.stdev(random_mask_results[1]), statistics.stdev(random_mask_results[2]),
                                             sample['n_ast_errors'], sample['ast_levels'], sample['n_whitespaces_'], sample['complexity'], sample['nloc'], sample['token_counts'], sample['n_ast_nodes'] #CONFOUNDERS
                                             ])
-                    if sample_index % 1000 == 0: 
+                    if sample_index % 100 == 0: 
                         self.save_checkpoint(test_set_results)
         self.save_checkpoint(test_set_results)
         return test_set_results

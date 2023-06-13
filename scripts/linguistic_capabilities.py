@@ -13,7 +13,9 @@ gpu_available = True
 python_language = "python"
 save_path = "/workspaces/CodeCheckList/data/linguistic_capabilities/"+checkpoint.replace("/","-")+"_"+str(masking_rate*100)+".csv"
 
-concepts = ['for_statement', 'while_statement', 'return_statement', ']', ')', 'if_statement', 'comparison_operator', 'boolean_operator', 'for_in_clause', 'if_clause', 'list_comprehension', 'lambda', 'identifier' ,'string']
+concepts = ['for_statement', 'while_statement', 'return_statement', 'if_statement', 
+            'comparison_operator', 'boolean_operator', 'for_in_clause', 'if_clause', 'identifier' ,'string', 'parameters'] #11
+random_sampling = 15
 
 ################ GALERAS PATHS
 galeras_paths = [
@@ -93,7 +95,7 @@ print('--- GALERAS FINISHED ----')
 ################ CALL EVALUATOR
 print('--- EVALUATION STARTED ----')
 
-results_dataframe = evaluator(test_set, concepts, masking_rate, 'code')
+results_dataframe = evaluator(test_set, concepts, masking_rate, 'code', random_sampling)
 
 print(results_dataframe.head())
 
