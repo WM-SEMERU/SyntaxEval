@@ -27,7 +27,7 @@ max_token_number = evaluator.tokenizer.tokenizer.max_len_single_sentence
 print('--- EVALUATION STARTED ----')
 
 ################ TEST SET
-test_set = utils.get_test_sets_galeras(json.load(test_set_path), python_language, max_token_number, evaluator.tokenizer)
+test_set = utils.get_test_sets_galeras(json.load(open(test_set_path,)), python_language, max_token_number, evaluator.tokenizer)
 #test_set = utils.get_random_sub_set_test_set(utils.get_test_sets(load_dataset("code_search_net", split='test'), python_language, evaluator.tokenizer.tokenizer.max_len_single_sentence, evaluator.tokenizer), number_of_samples)
 
 ################ CALL EVALUATOR

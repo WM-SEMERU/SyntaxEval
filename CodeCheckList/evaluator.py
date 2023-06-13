@@ -29,10 +29,11 @@ class Evaluator:
     def __call__(self, test_set, concepts: list, masking_rate: float, code_field: str):
         result_list = self.evaluate_concepts_in_test_set(concepts, test_set, masking_rate, code_field)
         results_dataframe = pd.DataFrame([], columns=[
-            'sample_id', 'ast_element', 'sample', 'masking_rate', 
+            'sample_id', 'ast_element', 'sample', 'masking_rate', 'numper_of_masked_tokens',
             'ast_element_ocurrences','mask_jaccard', 'mask_sorensen_dice', 'mask_levenshtein', 
-            'mask_random_jaccard', 'mask_random_sorensen_dice', 'mask_random_levenshtein'
-            ]) ## TODO ADD CONFOUNDERS
+            'mask_random_jaccard', 'mask_random_sorensen_dice', 'mask_random_levenshtein',
+            'n_ast_errors', 'ast_levels', 'n_whitespaces_', 'complexity', 'nloc', 'token_counts', 'n_ast_nodes' #CONFOUNDERS
+            ])
         for result_index, result in enumerate(result_list):
             results_dataframe.loc[len(results_dataframe.index)] = result
         return results_dataframe
@@ -111,8 +112,11 @@ class Evaluator:
                 concept_mask_results, number_of_masked_tokens = self.evaluate_node_type_on_snippet(sample[code_field], self.tokenizer.node_types.index(concept), 1, masking_rate)
                 random_mask_results = self.evaluate_random_mask_on_snippet(sample[code_field], 1, number_of_masked_tokens)
                 if len(concept_mask_results)>0:
-                    test_set_results.append([sample_index, concept, sample[code_field], masking_rate,
+                    'n_ast_errors', 'ast_levels', 'n_whitespaces_', 'complexity', 'nloc', 'token_counts', 'n_ast_nodes'
+                    test_set_results.append([sample_index, concept, sample[code_field], masking_rate, number_of_masked_tokens,
                                             concept_mask_results[0][0], concept_mask_results[0][1], concept_mask_results[0][2], concept_mask_results[0][3], 
-                                            random_mask_results[0][1], random_mask_results[0][2], random_mask_results[0][3]]) #TODO ADD CONFOUNDERS
+                                            random_mask_results[0][1], random_mask_results[0][2], random_mask_results[0][3],
+                                            sample['n_ast_errors'], sample['ast_levels'], sample['n_whitespaces_'], sample['complexity'], sample['nloc'], sample['token_counts'], sample['n_ast_nodes'] #CONFOUNDERS
+                                            ]) 
         return test_set_results
 
