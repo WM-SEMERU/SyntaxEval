@@ -162,3 +162,7 @@ checklink/cookies.txt
 scripts/logs/*
 scripts/logs/
 scripts/logs
+
+semeru-datasets/*
+datax/*
+data/

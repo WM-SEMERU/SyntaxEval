@@ -6,12 +6,13 @@ import json
 
 
 ########## YOU NEED TO SET THIS FIRST #######
-checkpoint = "huggingface/CodeBERTa-small-v1"
+#checkpoint = "huggingface/CodeBERTa-small-v1"
+checkpoint = 'microsoft/codebert-base-mlm'
 
 masking_rate = 100/100
-gpu_available = True
+gpu_available = False
 python_language = "python"
-random_sampling = 10
+random_sampling = 20
 
 concepts = ['for_statement', 'while_statement', 'return_statement', 'if_statement', 
             'comparison_operator', 'boolean_operator', 'for_in_clause', 'if_clause', 'identifier' ,'string', 'parameters'] #11

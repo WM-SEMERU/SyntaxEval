@@ -27,6 +27,9 @@ nohup python3 -u code_check_list.py > logs/huggingface-CodeBERTa-small-v1_all_25
 
 ##################################################################################################################
 
+###### 100% masking rate - 5 random sampling
+nohup python3 -u linguistic_capabilities.py > logs/huggingface-CodeBERTa-small-v1_all_5.txt &
+
 ###### 100% masking rate - 10 random sampling
 nohup python3 -u linguistic_capabilities.py > logs/huggingface-CodeBERTa-small-v1_all_10.txt &
 
@@ -34,4 +37,10 @@ nohup python3 -u linguistic_capabilities.py > logs/huggingface-CodeBERTa-small-v
 nohup python3 -u linguistic_capabilities.py > logs/huggingface-CodeBERTa-small-v1_all_15.txt &
 
 ###### 100% masking rate - 20 random sampling
-nohup python3 -u linguistic_capabilities.py > logs/huggingface-CodeBERTa-small-v1_all_20txt &
+nohup python3 -u linguistic_capabilities.py > logs/huggingface-CodeBERTa-small-v1_all_20.txt &
+
+
+##################################################################################################################
+
+###### 100% masking rate - 20 random sampling
+nohup python3 -u linguistic_capabilities.py > logs/huggingface-codebert_all_20.txt &
